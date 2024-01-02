@@ -1,18 +1,9 @@
 import {Controller, Inject} from '@tsed/di';
-import {
-	BodyParams,
-	Context,
-	PathParams,
-	QueryParams,
-} from '@tsed/platform-params';
+import {BodyParams, Context} from '@tsed/platform-params';
 import {Get, Post} from '@tsed/schema';
 import {User} from '../../models/User';
 import {Authenticate} from '@tsed/passport';
 import {MultipartFile, Res, Req} from '@tsed/common';
-import {CourseService} from '../../services/course.service';
-import {FilterQuery} from 'mongoose';
-import {Course} from '../../models/Course';
-import {Ref} from '@tsed/mongoose';
 import {CategoryService} from '../../services/category.service';
 
 @Controller('/category')

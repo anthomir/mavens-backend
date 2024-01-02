@@ -8,6 +8,23 @@ import {Category} from 'src/models/Category';
 
 @Service()
 export class CategoryService implements OnInit {
+	@Inject(Category)
+	private Category: MongooseModel<Category>;
+	async find() {
+		const courses = await this.Category.find();
+
+		if (courses.length < 0) {
+			throw new Error('No categories found');
+		}
+
+		return courses;
+	}
+
+	async create(payload: any) {
+		const category = await this.Category.create(payload);
+		return category;
+	}
+
 	async $onInit(): Promise<void | Promise<any>> {
 		const titles = [
 			'Mathematics',
@@ -30,24 +47,8 @@ export class CategoryService implements OnInit {
 			return;
 		}
 
-		for (let i = 0; i < count.length; i++) {
+		for (let i = 0; i < titles.length; i++) {
 			await this.Category.create({title: titles[i]});
 		}
-	}
-	@Inject(Category)
-	private Category: MongooseModel<Category>;
-	async find() {
-		const courses = await this.Category.find();
-
-		if (courses.length < 0) {
-			throw new Error('No categories found');
-		}
-
-		return courses;
-	}
-
-	async create(payload: any) {
-		const category = await this.Category.create(payload);
-		return category;
 	}
 }
