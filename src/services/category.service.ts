@@ -1,9 +1,5 @@
 import {Inject, OnInit, Res, Service} from '@tsed/common';
 import {MongooseModel} from '@tsed/mongoose';
-import sgMail from '@sendgrid/mail';
-import {Course} from '../models/Course';
-import {FilterQuery} from 'mongoose';
-import fs from 'fs';
 import {Category} from 'src/models/Category';
 
 @Service()

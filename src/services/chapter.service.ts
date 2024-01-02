@@ -1,66 +1,59 @@
 import {Inject, Res, Service} from '@tsed/common';
 import {MongooseModel} from '@tsed/mongoose';
-import sgMail from '@sendgrid/mail';
-import {Course} from '../models/Course';
 import {FilterQuery} from 'mongoose';
 import fs from 'fs';
-
-sgMail.setApiKey(String(process.env.SENDGRID_API));
+import {Chapter} from 'src/models/Chapter';
 
 @Service()
 export class ChapterService {
-	@Inject(Course)
-	private Course: MongooseModel<Course>;
+	@Inject(Chapter)
+	private Chapter: MongooseModel<Chapter>;
 	async find(
-		filter: FilterQuery<Course>,
+		filter: FilterQuery<Chapter>,
 		take: number,
 		skip: number,
 		sortBy?: string | undefined
 	) {
-		const courses = await this.Course.find(filter)
+		const courses = await this.Chapter.find(filter)
 			.limit(take)
 			.skip(skip)
 			.sort(sortBy);
-
 		if (courses.length < 0) {
-			throw new Error('No course found');
+			throw new Error('No chapters found');
 		}
-
 		return courses;
 	}
 
 	async findById(id: string) {
-		const course = await this.Course.findById(id);
-
-		if (!course) {
-			throw new Error('No course found');
+		const chapter = await this.Chapter.findById(id);
+		if (!chapter) {
+			throw new Error('No chapters found');
 		}
-
-		return course;
+		return chapter;
 	}
 
-	async create(payload: Course) {
-		const course = await this.Course.create(payload);
-		return course;
+	async create(payload: Chapter) {
+		const chapter = await this.Chapter.create(payload);
+		return chapter;
 	}
 
 	async postFile(res: Res, file: any) {
 		if (!file)
 			return res
 				.status(400)
-				.json({success: false, err: 'File should be of type Png or Jpeg'});
+				.json({success: false, err: 'File should be of type Mp4'});
 
 		const filename = file.filename;
 		const mimetype = file.mimetype.substring(file.mimetype.indexOf('/') + 1);
 
 		fs.rename(
-			`./public/uploads/${filename}`,
-			`./public/uploads/${filename}.${mimetype}`,
+			`./private/videos/${filename}`,
+			`./private/videos/${filename}.${mimetype}`,
 			function (err) {
 				if (err)
 					return res.status(500).json({message: 'An unexpected error occured'});
 			}
 		);
-		return `${process.env.PRODUCTION_URL}/uploads/${filename}.${mimetype}`;
+		return `${filename}.${mimetype}`;
 	}
 }
