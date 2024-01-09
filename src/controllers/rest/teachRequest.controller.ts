@@ -1,15 +1,18 @@
 import {TeachRequest} from './../../models/TeachRequest';
 import {Controller, Inject} from '@tsed/di';
-import {BodyParams, Context, QueryParams} from '@tsed/platform-params';
-import {Get, Post} from '@tsed/schema';
+import {
+	BodyParams,
+	Context,
+	PathParams,
+	QueryParams,
+} from '@tsed/platform-params';
+import {Get, Patch, Post} from '@tsed/schema';
 import {User} from '../../models/User';
 import {Authenticate} from '@tsed/passport';
-import {MultipartFile, Res, Req} from '@tsed/common';
-import {CategoryService} from '../../services/category.service';
+import {Res} from '@tsed/common';
 import {FilterQuery} from 'mongoose';
-import {Role} from 'src/models/Enum';
 import {TeachRequestService} from 'src/services/TeachRequest';
-
+import {Role} from '../../models/Enum';
 @Controller('/teach-request')
 export class TeachRequestController {
 	@Inject(TeachRequestService)
@@ -55,5 +58,43 @@ export class TeachRequestController {
 		}
 		const result = await this.teachRequestService.find(filter);
 		return res.status(200).send(result);
+	}
+
+	@Patch('/decline/:id')
+	@Authenticate('jwt')
+	async decline(
+		@Context('user') user: User,
+		@Res() res: Res,
+		@PathParams('id') id: any
+	) {
+		try {
+			if (user.role != Role.Admin) {
+				return res.status(401).send({message: 'unauthorized'});
+			}
+			const result = await this.teachRequestService.decline(id);
+
+			return res.status(201).send(result);
+		} catch (err) {
+			return res.status(500).send({message: err.message});
+		}
+	}
+
+	@Patch('/accept/:id')
+	@Authenticate('jwt')
+	async accept(
+		@Context('user') user: User,
+		@Res() res: Res,
+		@PathParams('id') id: any
+	) {
+		try {
+			if (user.role != Role.Admin) {
+				return res.status(401).send({message: 'unauthorized'});
+			}
+			const result = await this.teachRequestService.accept(id);
+
+			return res.status(201).send(result);
+		} catch (err) {
+			return res.status(500).send({message: err.message});
+		}
 	}
 }

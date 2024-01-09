@@ -1,8 +1,10 @@
 import {TeachRequest} from './../models/TeachRequest';
 import {Inject, OnInit, Res, Service} from '@tsed/common';
 import {MongooseModel} from '@tsed/mongoose';
+import {error} from 'console';
 import {FilterQuery} from 'mongoose';
 import {Category} from 'src/models/Category';
+import {Status} from 'src/models/Enum';
 import {User} from 'src/models/User';
 
 @Service()
@@ -31,6 +33,26 @@ export class TeachRequestService {
 
 	async create(payload: any) {
 		const teachRequest = await this.TeachRequest.create(payload);
+		return teachRequest;
+	}
+
+	async accept(id: string) {
+		const teachRequest = await this.TeachRequest.findById(id);
+		if (!teachRequest) {
+			throw error('not found');
+		}
+		teachRequest.status = Status.Approved;
+		teachRequest.save();
+		return teachRequest;
+	}
+
+	async decline(id: string) {
+		const teachRequest = await this.TeachRequest.findById(id);
+		if (!teachRequest) {
+			throw error('not found');
+		}
+		teachRequest.status = Status.Declined;
+		teachRequest.save();
 		return teachRequest;
 	}
 }
