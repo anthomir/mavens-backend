@@ -3,9 +3,8 @@ import {Inject, OnInit, Res, Service} from '@tsed/common';
 import {MongooseModel} from '@tsed/mongoose';
 import {error} from 'console';
 import {FilterQuery} from 'mongoose';
-import {Category} from 'src/models/Category';
-import {Status} from 'src/models/Enum';
-import {User} from 'src/models/User';
+import {Status} from '../models/Enum';
+import {User} from '../models/User';
 
 @Service()
 export class TeachRequestService {
