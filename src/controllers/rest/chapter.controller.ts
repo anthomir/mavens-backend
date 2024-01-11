@@ -5,11 +5,10 @@ import {
 	PathParams,
 	QueryParams,
 } from '@tsed/platform-params';
-import {Get, Post, Put, Delete} from '@tsed/schema';
+import {Get, Post} from '@tsed/schema';
 import {User} from '../../models/User';
 import {Authenticate} from '@tsed/passport';
 import {MulterOptions, MultipartFile, Res, Req} from '@tsed/common';
-import {CourseService} from '../../services/course.service';
 import {FilterQuery} from 'mongoose';
 import {Course} from '../../models/Course';
 import path from 'path';

@@ -19,15 +19,21 @@ export class User {
 	@Unique()
 	email: string;
 
+	@Default(`${process.env.PRODUCTION_URL}/profile/default.png`)
+	profileImage: string;
+
+	@Default(Date.now)
+	lastLogin: Date = new Date();
+
+	@Default(false)
+	isOnline: boolean;
+
 	@Default(Role.User)
 	role: string;
 
 	@Required().Error('Password is Required')
 	@Select(false)
 	password: string;
-
-	@Default(Date.now)
-	createdAt: Date = new Date();
 
 	@Nullable(String)
 	@Default('')

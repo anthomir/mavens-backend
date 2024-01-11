@@ -2,17 +2,14 @@ import {Controller, Inject} from '@tsed/di';
 import {
 	BodyParams,
 	Context,
-	HeaderParams,
 	PathParams,
 	QueryParams,
 } from '@tsed/platform-params';
 import {Get, Post, Put, Delete, Security, Header, Returns} from '@tsed/schema';
 import {User} from '../../models/User';
 import {UserService} from '../../services/user.service';
-import {Authenticate, Authorize} from '@tsed/passport';
+import {Authenticate} from '@tsed/passport';
 import {Req, Res} from '@tsed/common';
-import Mailgun from 'mailgun.js';
-import formData from 'form-data';
 
 @Controller('/user')
 export class UserController {
@@ -23,9 +20,7 @@ export class UserController {
 	async post(@Res() res: Res, @BodyParams() body: any) {
 		let response = await this.usersService.findOne({email: body.email});
 		if (response) {
-			return res
-				.status(409)
-				.json({success: false, err: 'Email/License already exists'});
+			return res.status(409).json({success: false, err: 'User already exists'});
 		}
 		return await this.usersService.create(body, res);
 	}
@@ -38,16 +33,34 @@ export class UserController {
 	@Get('/')
 	@Authenticate('jwt')
 	async get(
-		@Req() req: Req,
+		@Context('user') user: User,
 		@Res() res: Res,
 		@QueryParams('filter') filter?: string,
 		@QueryParams('take') take?: string,
 		@QueryParams('skip') skip?: string,
 		@QueryParams('sortBy') sortBy?: string
 	) {
-		return await this.usersService.find(filter, take, skip, sortBy);
+		const result = await this.usersService.find(
+			filter,
+			take,
+			skip,
+			sortBy,
+			user
+		);
+		return res
+			.status(200)
+			.json({message: 'successfully found users', data: result});
 	}
 
+	@Get('/:id')
+	@Authenticate('jwt')
+	async getById(@PathParams('id') id: string, @Res() res: Res) {
+		const response = await this.usersService.findById(id);
+		if (!response) {
+			return res.status(404).json({success: false, err: 'user not found'});
+		}
+		return res.status(200).json({message: 'user found', data: response});
+	}
 	@Get('/profile')
 	@Authenticate('jwt')
 	async getProfile(@Context('user') user: User, @Res() res: Res) {
@@ -92,5 +105,12 @@ export class UserController {
 		@BodyParams() body: any
 	) {
 		return await this.usersService.resetPassword(req, res, body);
+	}
+
+	@Post('/online')
+	@Authenticate('jwt')
+	async updateOnline(@Context('user') user: User, @BodyParams() body: any) {
+		this.usersService.updateOnline(user._id);
+		return null;
 	}
 }

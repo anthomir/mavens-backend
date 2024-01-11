@@ -18,7 +18,8 @@ export class UserService {
 		filter?: any,
 		take?: string,
 		skip?: string,
-		sortBy?: string
+		sortBy?: string,
+		currentUser?: User
 	): Promise<User[] | null> {
 		let data = filter
 			? await this.User.find(JSON.parse(filter))
@@ -26,7 +27,8 @@ export class UserService {
 					.skip(skip ? parseInt(skip) : 0)
 					.sort(sortBy ? sortBy : undefined)
 					.select('-email')
-			: await this.User.find().select('-email');
+					.ne('_id', currentUser?._id)
+			: await this.User.find().select('-email').ne('_id', currentUser?._id);
 		return data;
 	}
 
@@ -66,13 +68,11 @@ export class UserService {
 			return res.status(400).send({message: 'Bad Request'});
 		}
 
-		let user = await this.User.findOne({email: body.email})
-			.select('+password')
-			.lean();
+		let user = await this.User.findOne({email: body.email}).select('+password');
+
 		if (!user) {
 			return res.status(404).send({message: 'User not found'});
 		}
-
 		let valid;
 		try {
 			valid = await comparePassword(body.password, user.password);
@@ -92,7 +92,10 @@ export class UserService {
 				expiresIn: '1d',
 			}
 		);
+		user.lastLogin = new Date();
+		await user.save();
 
+		user = user.toObject();
 		let userToReturn = {...user, token: token};
 		userToReturn.password = '';
 		return res.status(200).send(userToReturn);
@@ -456,5 +459,18 @@ export class UserService {
 		} catch (err) {
 			return res.status(500).send({message: 'An unexpected error occured'});
 		}
+	}
+
+	async updateOnline(id: string) {
+		const user = await this.User.findById(id);
+		if (!user) {
+			return;
+		}
+
+		user.lastLogin = new Date();
+		user.isOnline = true;
+		user.save();
+
+		return;
 	}
 }

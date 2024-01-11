@@ -1,3 +1,4 @@
+import {UserStatusService} from './backgroundJob/user-online-status';
 import {Configuration, Inject} from '@tsed/di';
 import {PlatformApplication} from '@tsed/common';
 import '@tsed/platform-express';
@@ -68,7 +69,12 @@ const rootDir = __dirname;
 export class Server {
 	@Inject()
 	protected app: PlatformApplication;
-
+	@Inject(UserStatusService)
+	UserStatusService: UserStatusService;
 	@Configuration()
 	protected settings: Configuration;
+
+	$onInit(): void {
+		this.UserStatusService.startBackgroundJob();
+	}
 }
