@@ -1,14 +1,18 @@
 import {Inject, Res, Service} from '@tsed/common';
 import {MongooseModel} from '@tsed/mongoose';
-import sgMail from '@sendgrid/mail';
 import {Course} from '../models/Course';
 import {FilterQuery} from 'mongoose';
 import fs from 'fs';
+import {User} from '../models/User';
+import {Rating} from '../models/Rating';
 
 @Service()
 export class CourseService {
 	@Inject(Course)
 	private Course: MongooseModel<Course>;
+	@Inject(Rating)
+	private Rating: MongooseModel<Rating>;
+
 	async find(
 		filter: FilterQuery<Course>,
 		take: number,
@@ -26,7 +30,33 @@ export class CourseService {
 			throw new Error('No course found');
 		}
 
-		return courses;
+		const coursesWithRatings = await Promise.all(
+			courses.map(async (course) => {
+				const ratings: Rating[] = await this.Rating.find({
+					courseId: course._id,
+				});
+
+				let totalRatings = 0;
+
+				for (const rating of ratings) {
+					totalRatings += rating.rating;
+				}
+
+				const averageRating =
+					ratings.length > 0 ? totalRatings / ratings.length : 0;
+
+				return {
+					...course.toObject(),
+					averageRating,
+				};
+			})
+		);
+
+		if (courses.length < 0) {
+			throw new Error('No course found');
+		}
+
+		return coursesWithRatings;
 	}
 
 	async findById(id: string) {
@@ -36,12 +66,62 @@ export class CourseService {
 			throw new Error('No course found');
 		}
 
-		return course;
+		const ratings: Rating[] = await this.Rating.find({
+			courseId: course._id,
+		});
+
+		let totalRatings = 0;
+
+		for (const rating of ratings) {
+			totalRatings += rating.rating;
+		}
+
+		const averageRating =
+			ratings.length > 0 ? totalRatings / ratings.length : 0;
+
+		const courseWithRatings = {
+			...course.toObject(),
+			averageRating,
+		};
+
+		return courseWithRatings;
 	}
 
 	async create(payload: Course) {
 		const course = await this.Course.create(payload);
 		return course;
+	}
+
+	async rate(payload: Rating, createdBy: User, res: Res) {
+		if (!payload.courseId || !createdBy) {
+			throw new Error('Missing data');
+		}
+
+		if (payload.rating > 5 || payload.rating < 0) {
+			return res
+				.status(400)
+				.json({message: 'Rating should be between 0 and 5'});
+		}
+		const response = await this.Rating.findOne({
+			courseId: payload.courseId,
+			createdBy: createdBy._id,
+		});
+
+		if (response) {
+			return res
+				.status(409)
+				.json({message: 'You have already rated the following course'});
+		}
+
+		const course = await this.Course.findById(payload.courseId);
+
+		if (!course) {
+			return res.status(404).json({message: 'Course not found'});
+		}
+		const rating = await this.Rating.create(payload);
+		return res
+			.status(201)
+			.json({message: 'Created Successfully', data: rating});
 	}
 
 	async postFile(res: Res, file: any) {

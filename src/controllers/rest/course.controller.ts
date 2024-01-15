@@ -93,4 +93,20 @@ export class CourseController {
 
 		return result;
 	}
+
+	@Post('/rate/:id')
+	@Authenticate('jwt')
+	async rate(
+		@Context('user') user: User,
+		@Res() res: Res,
+		@BodyParams() body: any,
+		@PathParams('id') id: string
+	) {
+		try {
+			const payload = {...body, courseId: id, createdBy: user._id};
+			await this.courseService.rate(payload, user, res);
+		} catch (err) {
+			return res.status(500).send({message: err.message});
+		}
+	}
 }

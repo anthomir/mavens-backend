@@ -2,6 +2,7 @@ import {Email, Required, Default, ErrorMsg, Nullable} from '@tsed/schema';
 import {Model, ObjectID, Ref, Select, Unique} from '@tsed/mongoose';
 import {Role} from './Enum';
 import {User} from './User';
+import {Rating} from './Rating';
 
 @Model()
 export class Course {
