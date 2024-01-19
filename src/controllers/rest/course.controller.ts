@@ -109,4 +109,36 @@ export class CourseController {
 			return res.status(500).send({message: err.message});
 		}
 	}
+
+	@Get('/subscriptions')
+	@Authenticate('jwt')
+	async getSubscription(
+		@Context('user') user: User,
+		@Res() res: Res,
+		@BodyParams() body: any,
+		@PathParams('id') id: string
+	) {
+		try {
+			const subs = await this.courseService.getSubscriptions(user._id);
+			return res.status(200).send(subs);
+		} catch (err) {
+			return res.status(500).send({message: err});
+		}
+	}
+
+	@Post('/subscribe')
+	@Authenticate('jwt')
+	async subscribe(
+		@Context('user') user: User,
+		@Res() res: Res,
+		@BodyParams() body: any,
+		@PathParams('id') id: string
+	) {
+		try {
+			const subs = await this.courseService.enroll(id, user._id);
+			return res.status(201).send(subs);
+		} catch (err) {
+			return res.status(500).send({message: err});
+		}
+	}
 }

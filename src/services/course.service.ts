@@ -6,6 +6,7 @@ import fs from 'fs';
 import {User} from '../models/User';
 import {Rating} from '../models/Rating';
 import {Chapter} from 'src/models/Chapter';
+import {Subscription} from 'src/models/Subscription';
 
 @Service()
 export class CourseService {
@@ -15,6 +16,8 @@ export class CourseService {
 	private Rating: MongooseModel<Rating>;
 	@Inject(Chapter)
 	private Chapter: MongooseModel<Chapter>;
+	@Inject(Subscription)
+	private Subscription: MongooseModel<Subscription>;
 
 	async find(
 		filter: FilterQuery<Course>,
@@ -149,5 +152,21 @@ export class CourseService {
 		);
 		return `${filename}.${mimetype}`;
 		// return `${process.env.PRODUCTION_URL}/uploads/${filename}.${mimetype}`;
+	}
+
+	async enroll(courseId: string, createdBy: string) {
+		const subscription = await this.Subscription.create({
+			user: createdBy,
+			course: courseId,
+		});
+		return subscription;
+	}
+
+	async getSubscriptions(user: string) {
+		const subscription = await this.Subscription.find({
+			user: user,
+		}).populate('course');
+
+		return subscription;
 	}
 }
