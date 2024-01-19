@@ -5,6 +5,7 @@ import {FilterQuery} from 'mongoose';
 import fs from 'fs';
 import {User} from '../models/User';
 import {Rating} from '../models/Rating';
+import {Chapter} from 'src/models/Chapter';
 
 @Service()
 export class CourseService {
@@ -12,6 +13,8 @@ export class CourseService {
 	private Course: MongooseModel<Course>;
 	@Inject(Rating)
 	private Rating: MongooseModel<Rating>;
+	@Inject(Chapter)
+	private Chapter: MongooseModel<Chapter>;
 
 	async find(
 		filter: FilterQuery<Course>,
@@ -68,6 +71,10 @@ export class CourseService {
 
 		const ratings: Rating[] = await this.Rating.find({
 			courseId: course._id,
+		}).populate('createdBy');
+
+		const chapters: Chapter[] = await this.Chapter.find({
+			courseId: course._id,
 		});
 
 		let totalRatings = 0;
@@ -84,7 +91,7 @@ export class CourseService {
 			averageRating,
 		};
 
-		return courseWithRatings;
+		return {courseWithRatings, ratings, chapters};
 	}
 
 	async create(payload: Course) {

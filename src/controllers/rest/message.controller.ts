@@ -9,8 +9,6 @@ import {Get, Post} from '@tsed/schema';
 import {User} from '../../models/User';
 import {Authenticate} from '@tsed/passport';
 import {MultipartFile, Res, Req} from '@tsed/common';
-import {CategoryService} from '../../services/category.service';
-import {ChatService} from 'src/services/chat.service';
 import {MessageService} from 'src/services/message.service';
 
 @Controller('/message')
