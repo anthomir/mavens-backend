@@ -10,9 +10,11 @@ export class Subscription {
 	_id: string;
 
 	@Required()
+	@Ref(() => User)
 	user: Ref<User>;
 
 	@Required()
+	@Ref(() => Course)
 	course: Ref<Course>;
 
 	@Default(Date.now)

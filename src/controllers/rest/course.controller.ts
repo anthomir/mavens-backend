@@ -85,11 +85,15 @@ export class CourseController {
 
 	@Get('/:id')
 	@Authenticate('jwt')
-	async findById(@PathParams('id') id: string, @Res() res: Res) {
+	async findById(
+		@Context('user') user: User,
+		@PathParams('id') id: string,
+		@Res() res: Res
+	) {
 		if (!id) {
 			return res.status(404).json({message: 'id required'});
 		}
-		const result = await this.courseService.findById(id);
+		const result = await this.courseService.findById(id, user._id);
 
 		return result;
 	}
@@ -126,16 +130,15 @@ export class CourseController {
 		}
 	}
 
-	@Post('/subscribe')
+	@Post('/subscribe/:id')
 	@Authenticate('jwt')
 	async subscribe(
 		@Context('user') user: User,
 		@Res() res: Res,
-		@BodyParams() body: any,
 		@PathParams('id') id: string
 	) {
 		try {
-			const subs = await this.courseService.enroll(id, user._id);
+			const subs = await this.courseService.enroll(id, user._id, res);
 			return res.status(201).send(subs);
 		} catch (err) {
 			return res.status(500).send({message: err});

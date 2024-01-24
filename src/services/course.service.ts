@@ -65,7 +65,7 @@ export class CourseService {
 		return coursesWithRatings;
 	}
 
-	async findById(id: string) {
+	async findById(id: string, user: string) {
 		const course = await this.Course.findById(id).populate('createdBy').exec();
 
 		if (!course) {
@@ -80,6 +80,11 @@ export class CourseService {
 			courseId: course._id,
 		});
 
+		const subscription = await this.Subscription.findOne({
+			course: id,
+			user: user,
+		});
+
 		let totalRatings = 0;
 
 		for (const rating of ratings) {
@@ -92,9 +97,10 @@ export class CourseService {
 		const courseWithRatings = {
 			...course.toObject(),
 			averageRating,
+			isSubscribed: subscription ? true : false,
 		};
 
-		return {courseWithRatings, ratings, chapters};
+		return {course: courseWithRatings, ratings, chapters};
 	}
 
 	async create(payload: Course) {
@@ -154,7 +160,21 @@ export class CourseService {
 		// return `${process.env.PRODUCTION_URL}/uploads/${filename}.${mimetype}`;
 	}
 
-	async enroll(courseId: string, createdBy: string) {
+	async enroll(courseId: string, createdBy: string, res: Res) {
+		const course = await this.Course.findById(courseId);
+
+		if (!course) {
+			return res.status(404).json({message: 'Course not found'});
+		}
+
+		const sub = await this.Subscription.findOne({
+			user: createdBy,
+			course: courseId,
+		});
+
+		if (sub) {
+			return res.status(200).json({message: 'user already subscribed'});
+		}
 		const subscription = await this.Subscription.create({
 			user: createdBy,
 			course: courseId,

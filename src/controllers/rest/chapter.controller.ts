@@ -24,7 +24,7 @@ export class ChapterController {
 	@Post('/')
 	@Authenticate('jwt')
 	@MulterOptions({
-		dest: './private/videos',
+		dest: './public/videos',
 		fileFilter(req: Req, file, cb) {
 			const allowedExtensions = ['.mp4'];
 			const extension = path.extname(file.originalname).toLowerCase();

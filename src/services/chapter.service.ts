@@ -47,8 +47,8 @@ export class ChapterService {
 		const mimetype = file.mimetype.substring(file.mimetype.indexOf('/') + 1);
 
 		fs.rename(
-			`./private/videos/${filename}`,
-			`./private/videos/${filename}.${mimetype}`,
+			`./public/videos/${filename}`,
+			`./public/videos/${filename}.${mimetype}`,
 			function (err) {
 				if (err)
 					return res.status(500).json({message: 'An unexpected error occured'});
