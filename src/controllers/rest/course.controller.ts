@@ -46,6 +46,7 @@ export class CourseController {
 	async post(
 		@Context('user') user: User,
 		@Res() res: Res,
+		@Req() req: Req,
 		@BodyParams() body: any,
 		@MultipartFile('file') file: Express.Multer.File
 	) {
