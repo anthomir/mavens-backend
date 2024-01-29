@@ -49,6 +49,7 @@ export class UserService {
 				lastName: user.lastName,
 				email: user.email,
 				password: passwordEncrypted,
+				profileImage: `${process.env.PRODUCTION_URL}/profile/default.png`,
 			});
 			userCreated.password = '';
 			return res.status(201).json({success: true, data: userCreated});
